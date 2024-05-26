@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls, STLLoader } from 'three/addons'
+import { renderMandelbrot } from './mandelbrot';
 
 
 const scene = new THREE.Scene()
@@ -72,7 +73,7 @@ scene.add(sphere);
 sphere.position.set(-2, 0, 0);
 
 
-scene.fog = new THREE.Fog(0x3f7b9d, 1, 10);
+// scene.fog = new THREE.Fog(0x3f7b9d, 1, 10);
 const tetrahedron_geometry = new THREE.TetrahedronGeometry();
 const tetrahedron_material = new THREE.MeshNormalMaterial();
 
@@ -80,6 +81,12 @@ const tetrahedron = new THREE.Mesh(tetrahedron_geometry, tetrahedron_material);
 scene.add(tetrahedron);
 tetrahedron.position.set(0, 0, 2);
 
+const texture = new THREE.CanvasTexture(renderMandelbrot());
+
+const geometry = new THREE.PlaneGeometry(5, 5);
+const material = new THREE.MeshBasicMaterial({ map: texture });
+const plane = new THREE.Mesh(geometry, material);
+scene.add(plane);
 
 const loader = new STLLoader();
 let russ: THREE.Mesh;
