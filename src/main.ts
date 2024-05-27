@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import { OrbitControls, STLLoader } from 'three/addons'
+import { OrbitControls, STLLoader} from 'three/addons'
 import { renderMandelbrot } from './mandelbrot';
+
 
 
 const scene = new THREE.Scene()
@@ -17,6 +18,13 @@ scene.add(SpotLight);
 const AmbientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(AmbientLight);
 
+const pointLight1 = new THREE.PointLight( 0xffffff, 3, 0, 0 );
+pointLight1.position.set( 500, 500, 500 );
+scene.add( pointLight1 );
+
+const pointLight2 = new THREE.PointLight( 0xffffff, 1, 0, 0 );
+pointLight2.position.set( - 500, - 500, - 500 );
+scene.add( pointLight2 );
 
 const renderer = new THREE.WebGLRenderer()
 renderer.setSize(window.innerWidth, window.innerHeight)
@@ -81,12 +89,16 @@ const tetrahedron = new THREE.Mesh(tetrahedron_geometry, tetrahedron_material);
 scene.add(tetrahedron);
 tetrahedron.position.set(0, 0, 2);
 
-const texture = new THREE.CanvasTexture(renderMandelbrot());
+const skybox_texture = new THREE.CanvasTexture(renderMandelbrot());
 
-const geometry = new THREE.PlaneGeometry(5, 5);
-const material = new THREE.MeshBasicMaterial({ map: texture });
-const plane = new THREE.Mesh(geometry, material);
-scene.add(plane);
+const geometry = new THREE.SphereGeometry(20, 32, 32); // Create a sphere geometry
+const material = new THREE.MeshBasicMaterial({
+  map: skybox_texture,
+  side: THREE.BackSide // This makes the texture visible from the inside of the sphere
+});
+const skybox = new THREE.Mesh(geometry, material);
+scene.add(skybox);
+
 
 const loader = new STLLoader();
 let russ: THREE.Mesh;
@@ -140,6 +152,41 @@ app.appendChild(addBtn);
 addBtn.onclick = function () {
   addRuss();
 }
+
+
+// Adding 20 primary shapes
+const shapes: THREE.Mesh[] = [];
+for (let i = 0; i < 20; i++) {
+  let shape: THREE.Mesh;
+  const randomShape = Math.floor(Math.random() * 3);
+  const material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+
+  switch (randomShape) {
+    case 0:
+      shape = new THREE.Mesh(new THREE.BoxGeometry(), material);
+      break;
+    case 1:
+      shape = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), material);
+      break;
+    case 2:
+      shape = new THREE.Mesh(new THREE.TetrahedronGeometry(), material);
+      break;
+    default:
+      shape = new THREE.Mesh(new THREE.BoxGeometry(), material); // Fallback to BoxGeometry
+  }
+
+  shape.position.set(
+    (Math.random() - 0.5) * 30,
+    (Math.random() - 0.5) * 30,
+    (Math.random() - 0.5) * 30
+  );
+
+  shapes.push(shape);
+}
+
+scene.add(...shapes);
+
+
 function animate() {
   requestAnimationFrame(animate)
 
